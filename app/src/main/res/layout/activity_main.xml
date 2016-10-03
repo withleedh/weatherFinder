@@ -9,53 +9,41 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.leedongho.weatherfinder.MainActivity">
 
-    <ImageView
+
+    <ListView
+        android:id="@+id/weatherListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/background"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:scaleType="centerCrop"
-        android:id="@+id/imageView" />
+        android:layout_below="@+id/button">
+
+    </ListView>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter the city"
         android:id="@+id/textView"
-        android:layout_alignTop="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="44dp"
         android:textSize="30sp"
-        android:textColor="#ffffff"/>
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/cityName"
-        android:layout_alignTop="@+id/imageView"
-        android:layout_marginTop="80dp"
         android:textSize="30sp"
-        android:textColor="#000000"/>
+        android:layout_toRightOf="@+id/textView"
+        android:layout_toEndOf="@+id/textView" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="What&apos;s the weather"
         android:id="@+id/button"
-        android:layout_below="@+id/cityName"
-        android:layout_alignLeft="@+id/textView"
-        android:layout_alignStart="@+id/textView"
         android:layout_marginTop="23dp"
-        android:onClick="findWeather" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/resultTextView"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="100dp"
-        android:textColor="#ffffff"
-        android:textSize="20sp"/>
+        android:onClick="findWeather"
+        android:layout_below="@+id/cityName"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

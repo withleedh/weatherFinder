@@ -1,11 +1,21 @@
 package com.example.leedongho.weatherfinder;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -20,14 +30,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity{
 
     @Bind(R.id.cityName) EditText cityName;
-    @Bind(R.id.resultTextView) TextView resultTextView;
+    @Bind(R.id.weatherListView) ListView listview;
+    ListViewAdapter listViewAdapter;
 
     public void findWeather(View view){
 
@@ -36,7 +48,8 @@ public class MainActivity extends Activity {
             DownloadTask getWeather = new DownloadTask();
             getWeather.execute("http://api.openweathermap.org/data/2.5/weather?q=" + encodedCityName + "&APPID=931ed2a2113552915849cebeb3f0f9a5");
 
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
@@ -46,8 +59,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ButterKnife.bind(this);
+
+        listViewAdapter = new ListViewAdapter();
+        listview.setAdapter(listViewAdapter);
+
+
 
 
     }
@@ -75,9 +92,11 @@ public class MainActivity extends Activity {
                     data = reader.read();
                 }
 
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -91,11 +110,15 @@ public class MainActivity extends Activity {
             try {
                 String message = "";
 
-                JSONObject jsonObject = new JSONObject(result);
+                JSONObject weatherObject = new JSONObject(result);
 
                 //extract weather part of JSON Object
-                String weatherInfo =  jsonObject.getString("weather");
+                String weatherInfo =  weatherObject.getString("weather");
+                String selectedCityName = weatherObject.getString("name");
 
+
+
+                Log.i("aa",weatherObject.toString());
                 Log.i("Weather content", weatherInfo);
 
                 JSONArray weatherArray = new JSONArray(weatherInfo);
@@ -106,28 +129,106 @@ public class MainActivity extends Activity {
 
                     String main = "";
                     String description = "";
+                    String icon="";
+
 
                     main = jsonPart.getString("main");
                     description = jsonPart.getString("description");
+                    icon = "w"+jsonPart.getString("icon");
+
+                    // TODO Add more item
+
+//                    List Item should contain "Day of week", "Month-Day", "Weather", "Temperature (current, min , max)"
+//                    ex) Wed, Jun 4 - Cloudy - 35 - 27 / 38
 
                     if (main != "" && description != "") {
 
-                        message += main + ": " + description + "\r\n";
+                        String packName = getPackageName();
+                        int imageResId = getResources().getIdentifier(icon, "drawable", packName);
+                        // Test Case
+                        //message += main + ": " + description + "\r\n";
+                        WeatherData  weatherData= new WeatherData();
+
+                        weatherData.setIcon(getDrawable(imageResId));
+                        weatherData.setCityName(selectedCityName);
+                        weatherData.setDescription(description);
+
+                        listViewAdapter.mWeatherDataList.add(weatherData);
+                        listViewAdapter.notifyDataSetChanged();
 
                     }
-
-                    if ( message != "" && description != "") {
-
-                        resultTextView.setText(message);
+                    else{
+                        // Do nothing
                     }
+
                 }
 
-            } catch (JSONException e) {
+            }
+            catch (JSONException e) {
                 e.printStackTrace();
             }
 
 
             Log.i("Content", "DownloadTask.onPostExecute : " + "String :" + result);
+        }
+    }
+
+    private class ViewHolder{
+        public ImageView iconImageView;
+        public TextView cityName;
+        public TextView description;
+
+    }
+
+    public class ListViewAdapter extends BaseAdapter {
+
+        private ArrayList<WeatherData> mWeatherDataList = new ArrayList<WeatherData>();
+
+        public ListViewAdapter(){
+        }
+
+        @Override
+        public int getCount() {
+            return mWeatherDataList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mWeatherDataList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View view, ViewGroup viewGroup) {
+            ViewHolder holder;
+            if (view == null){
+                holder = new ViewHolder();
+
+                LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+                view = inflater.inflate(R.layout.weather_listview_item,null);
+
+                holder.iconImageView = (ImageView) view.findViewById(R.id.listview_image);
+                holder.cityName = (TextView) view.findViewById( R.id.listview_city_name);
+                holder.description = (TextView) view.findViewById( R.id.listview_city_description);
+
+
+                WeatherData weatherData = mWeatherDataList.get(position);
+                holder.iconImageView.setImageDrawable(weatherData.getIcon());
+                holder.cityName.setText(weatherData.getCityName());
+                holder.description.setText(weatherData.getDescription());
+
+                view.setTag(holder);
+            }else{
+                holder = (ViewHolder)view.getTag();
+            }
+
+            WeatherData weatherData = mWeatherDataList.get(position);
+
+            return view;
         }
     }
 }
